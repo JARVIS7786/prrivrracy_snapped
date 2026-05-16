@@ -6,12 +6,14 @@
 Privacy Wrapped is an open-source tool that takes your Instagram and Google data exports and generates a personalized, slightly savage AI report showing exactly what these platforms know about you.
 
 **No server. No upload. Your data never leaves your machine.**
-
 ---
-
 ## 🔥 Live Demo
 
 > Here's a real (slightly censored) report generated from actual Instagram + Google data:
+> 
+![Privacy Wrapped Demo](demo.png)
+<img width="642" height="870" alt="Screenshot 2026-05-16 205257" src="https://github.com/user-attachments/assets/1c54f8e9-8298-462d-a96c-4b43a74c6327" />
+
 
 ---
 ### 👁️ PRIVACY WRAPPED: THE SEMI-SENTIENT EDITION
