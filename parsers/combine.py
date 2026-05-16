@@ -30,10 +30,10 @@ def combine_and_report():
     # Build combined profile
     combined = {
         # Instagram
-        "total_advertisers": ig.get("total_advertisers", 0),
+        "total_advertisers": ig.get("advertiser_count", 0),
         "ad_categories": ig.get("ad_categories", []),
         "locations": ig.get("locations", []),
-        "searches": ig.get("searches", []),
+        "searches": ig.get("recent_searches", []),
         "industries": ig.get("industries", {}),
 
         # Google
@@ -41,7 +41,10 @@ def combine_and_report():
         "youtube_watched": google.get("youtube_watched", []),
         "maps_locations": google.get("maps_locations", []),
         "youtube_searches": google.get("youtube_searches", []),
+        
     }
+    print(f"DEBUG ig keys: {list(ig.keys())}")
+    print(f"DEBUG total_advertisers value: {ig.get('total_advertisers')}")
 
     # Save combined JSON for the UI later
     with open(f"{OUTPUT}/combined_data.json", 'w', encoding='utf-8') as f:

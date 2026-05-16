@@ -1,4 +1,10 @@
+# Never commit your personal data or secrets
 .env
-output/
 data/
-.claude
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
