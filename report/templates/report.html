@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Wrapped | What They Know</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+
+        :root {
+            --bg-color: #050505;
+            --card-bg: #111111;
+            --accent-red: #ff2a2a;
+            --accent-green: #00ff66;
+            --accent-purple: #b026ff;
+            --accent-blue: #00d4ff;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* DRAG AND DROP ZONE */
+        #drop-zone {
+            border: 2px dashed var(--accent-red);
+            background-color: #1a0505;
+            border-radius: 15px;
+            padding: 50px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20vh;
+            box-shadow: 0 0 20px rgba(255, 42, 42, 0.1);
+        }
+
+        #drop-zone.dragover {
+            background-color: #2a0505;
+            border-color: var(--accent-green);
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2);
+        }
+
+        #drop-zone h2 {
+            margin-top: 0;
+            color: var(--accent-red);
+        }
+
+        #drop-zone p {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* REPORT UI */
+        #report-ui {
+            display: none;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #222;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+            /* Cards hidden until data loads */
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-purple));
+        }
+
+        .card.google-card::before {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+        }
+
+        .card h3 {
+            margin: 0 0 15px 0;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+        }
+
+        .scary-number {
+            font-size: 4em;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+            color: var(--accent-red);
+            text-shadow: 0 0 20px rgba(255, 42, 42, 0.4);
+        }
+
+        .scary-subtitle {
+            font-size: 1.1em;
+            color: var(--text-main);
+            margin-top: 10px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            background: rgba(176, 38, 255, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid var(--accent-purple);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        /* BAR CHART */
+        .chart-row {
+            margin-bottom: 15px;
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .bar-bg {
+            width: 100%;
+            background: #222;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--accent-green);
+            width: 0%;
+            box-shadow: 0 0 10px var(--accent-green);
+            transition: width 1s ease;
+        }
+
+        /* LISTS */
+        .data-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .data-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.9em;
+        }
+
+        .data-list li:last-child {
+            border-bottom: none;
+        }
+
+        .timestamp {
+            display: block;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-title h1 {
+            font-size: 2.5em;
+            margin: 0;
+            background: -webkit-linear-gradient(45deg, var(--accent-red), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div id="drop-zone">
+            <h2>Decrypt Your Data</h2>
+            <p>Drag & Drop <strong>instagram_data.json</strong> and/or <strong>google_data.json</strong> here.</p>
+            <p style="font-size: 0.75em; margin-top: 20px;">You can upload both! Data never leaves your browser.</p>
+            <input type="file" id="file-input" accept=".json" multiple>
+        </div>
+
+        <div id="report-ui">
+            <div class="header-title">
+                <h1>PRIVACY WRAPPED</h1>
+                <p style="color: var(--text-muted);">The digital footprint you left behind.</p>
+            </div>
+
+            <!-- INSTAGRAM CARDS -->
+            <div class="card" id="card-advertisers">
+                <h3>The Watchers (Instagram)</h3>
+                <p class="scary-number" id="ad-count">0</p>
+                <p class="scary-subtitle">companies paid to track you this year.</p>
+            </div>
+
+            <div class="card" id="card-industries">
+                <h3>The Industry Breakdown</h3>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 0;">Who is buying your attention:</p>
+                <div id="industry-chart"></div>
+            </div>
+
+            <div class="card" id="card-categories">
+                <h3>The Algorithm's Blueprint</h3>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 0;">How Meta defines your
+                    personality:</p>
+                <div class="tags-container" id="category-tags"></div>
+            </div>
+
+            <!-- GOOGLE CARDS -->
+            <div class="card google-card" id="card-google-searches">
+                <h3>The Google Brain</h3>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 0;">Your unfiltered thoughts, logged
+                    forever:</p>
+                <ul class="data-list" id="google-search-list"></ul>
+            </div>
+
+            <div class="card google-card" id="card-youtube">
+                <h3>Your YouTube Rabbit Hole</h3>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 0;">The content shaping your
+                    worldview:</p>
+                <ul class="data-list" id="youtube-list"></ul>
+            </div>
+
+            <div class="card google-card" id="card-maps">
+                <h3>Where You've Been</h3>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 0;">Google Maps tracks your
+                    footprint:</p>
+                <ul class="data-list" id="maps-list"></ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; margin-bottom: 50px;">
+                <button
+                    style="background: var(--text-main); color: var(--bg-color); border: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; font-family: inherit; cursor: pointer;">Share
+                    Your Blueprint</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const reportUI = document.getElementById('report-ui');
+
+        // Allow clicking the drop zone
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Visual feedback
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+        // Handle File Drop (Can handle multiple files)
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            Array.from(e.dataTransfer.files).forEach(processFile);
+        });
+
+        // Handle File input
+        fileInput.addEventListener('change', (e) => {
+            Array.from(e.target.files).forEach(processFile);
+        });
+
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    renderReport(data);
+                } catch (err) {
+                    console.error("Error reading JSON", err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Global function to render whichever data comes in
+        function renderReport(data) {
+            dropZone.style.display = 'none';
+            reportUI.style.display = 'block';
+
+            // --- PROCESS INSTAGRAM DATA ---
+            if (data.total_advertisers) {
+                document.getElementById('card-advertisers').classList.add('active');
+                document.getElementById('ad-count').innerText = data.total_advertisers.toLocaleString();
+            }
+
+            if (data.ad_categories && data.ad_categories.length > 0) {
+                document.getElementById('card-categories').classList.add('active');
+                const catDiv = document.getElementById('category-tags');
+                catDiv.innerHTML = '';
+                data.ad_categories.slice(0, 15).forEach(cat => {
+                    const span = document.createElement('span');
+                    span.className = 'tag';
+                    span.innerText = cat;
+                    catDiv.appendChild(span);
+                });
+            }
+
+            if (data.industries) {
+                document.getElementById('card-industries').classList.add('active');
+                const chartDiv = document.getElementById('industry-chart');
+                chartDiv.innerHTML = '';
+                let maxVal = 0;
+                for (let ind in data.industries) {
+                    if (data.industries[ind] > maxVal && ind !== "Other / Uncategorized") maxVal = data.industries[ind];
+                }
+                for (let ind in data.industries) {
+                    if (ind === "Other / Uncategorized" || data.industries[ind] === 0) continue;
+                    const count = data.industries[ind];
+                    const percent = Math.min((count / maxVal) * 100, 100);
+                    chartDiv.innerHTML += `
+                        <div class="chart-row">
+                            <div class="chart-label"><span>${ind}</span><span style="color: var(--accent-green);">${count}</span></div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: ${percent}%"></div></div>
+                        </div>`;
+                }
+            }
+
+            // --- PROCESS GOOGLE DATA ---
+            if (data.google_searches && data.google_searches.length > 0) {
+                document.getElementById('card-google-searches').classList.add('active');
+                populateList('google-search-list', data.google_searches, 10);
+            }
+
+            if (data.youtube_watched && data.youtube_watched.length > 0) {
+                document.getElementById('card-youtube').classList.add('active');
+                populateList('youtube-list', data.youtube_watched, 8);
+            }
+
+            if (data.maps_locations && data.maps_locations.length > 0) {
+                document.getElementById('card-maps').classList.add('active');
+                populateList('maps-list', data.maps_locations, 8, "📍 ");
+            }
+        }
+
+        // Helper to populate lists
+        function populateList(elementId, items, limit, prefix = "") {
+            const list = document.getElementById(elementId);
+            list.innerHTML = '';
+            items.slice(0, limit).forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${prefix}${item.value}</strong> <span class="timestamp">${item.time}</span>`;
+                list.appendChild(li);
+            });
+        }
+    </script>
+</body>
+
+</html>
