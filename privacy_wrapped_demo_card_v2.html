@@ -1,0 +1,229 @@
+<style>
+  .pw-wrap {
+    background: #0a0a0a;
+    border-radius: 16px;
+    padding: 28px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+    border: 0.5px solid #222;
+  }
+
+  .pw-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .pw-logo {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #555;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .pw-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #ff3333;
+    font-family: var(--font-mono);
+    margin: 0;
+  }
+
+  .pw-sub {
+    font-size: 12px;
+    color: #444;
+    margin-top: 4px;
+  }
+
+  .pw-card {
+    background: #111;
+    border: 0.5px solid #222;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pw-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff3333, #9333ea);
+  }
+
+  .pw-card-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  .pw-big-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #ff3333;
+    line-height: 1;
+    font-family: var(--font-mono);
+  }
+
+  .pw-big-sub {
+    font-size: 13px;
+    color: #666;
+    margin-top: 6px;
+  }
+
+  .pw-quote {
+    font-size: 14px;
+    color: #aaa;
+    line-height: 1.8;
+    font-style: italic;
+    border-left: 2px solid #ff3333;
+    padding-left: 12px;
+    margin: 0;
+  }
+
+  .pw-quote strong {
+    color: #fff;
+    font-style: normal;
+  }
+
+  .pw-highlight {
+    font-size: 15px;
+    color: #aaa;
+    line-height: 1.8;
+    font-style: italic;
+    border-left: 2px solid #9333ea;
+    padding-left: 12px;
+    margin: 0;
+  }
+
+  .pw-highlight strong {
+    color: #fff;
+    font-style: normal;
+  }
+
+  .pw-highlight .red {
+    color: #ff3333;
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .pw-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .pw-tag {
+    font-size: 11px;
+    background: rgba(147, 51, 234, 0.12);
+    color: #a855f7;
+    border: 0.5px solid #7c3aed;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .pw-punchline {
+    text-align: center;
+    font-size: 13px;
+    color: #555;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  .pw-punchline strong {
+    color: #888;
+  }
+
+  .pw-cta {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    background: #ff3333;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    font-family: var(--font-sans);
+    letter-spacing: 0.5px;
+  }
+
+  .pw-arrow {
+    font-size: 11px;
+    color: #333;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 0.5px solid #1a1a1a;
+    margin: 6px 0 10px;
+  }
+</style>
+
+<div class="pw-wrap">
+  <div class="pw-header">
+    <div class="pw-logo">privacy wrapped 2026</div>
+    <div class="pw-title">THEY KNOW.</div>
+    <div class="pw-sub">A real report. Real data. Real unsettling.</div>
+  </div>
+
+  <div class="pw-card">
+    <div class="pw-card-label">the watchers</div>
+    <div class="pw-big-number">5,881</div>
+    <div class="pw-big-sub">companies paid to track one person this year</div>
+  </div>
+
+  <div class="pw-card">
+    <div class="pw-card-label">the algorithm's verdict</div>
+    <div class="pw-tags">
+      <span class="pw-tag">Engaged Shopper</span>
+      <span class="pw-tag">Relationship: Single</span>
+      <span class="pw-tag">Potential device change</span>
+      <span class="pw-tag">Education: Bachelors</span>
+      <span class="pw-tag">Wi-Fi Usage</span>
+    </div>
+  </div>
+
+  <div class="pw-card">
+    <div class="pw-card-label">what the ai actually said</div>
+    <p class="pw-highlight">
+      "By day — <strong>Python tuples, quadratic equations, log problems.</strong><br><br>
+      Then evening hits.<br><br>
+      <span class="red">The mask slips.<br>
+        The math ends.<br>
+        The thirst begins.</span> 🎭"
+    </p>
+  </div>
+
+  <div class="pw-card">
+    <div class="pw-card-label">the punchline</div>
+    <p class="pw-quote">
+      "You spend your days solving for <strong>x</strong>, but the algorithm already solved for <strong>you</strong> —
+      turns out you're just a predictable mix of <strong>algebra, cricket stats, and a very specific Bollywood
+        crush.</strong>" 💅
+    </p>
+  </div>
+
+  <div class="pw-punchline">
+    <strong>Your data. Your roast. Runs 100% locally.</strong><br>
+    What does your algorithm say about you?
+  </div>
+
+  <button class="pw-cta" onclick="openLink('https://github.com/JARVIS7786/privacy-wrapped')">
+    Get your own Privacy Wrapped →
+  </button>
+
+  <div class="pw-arrow">github.com/JARVIS7786/privacy-wrapped</div>
+</div>
