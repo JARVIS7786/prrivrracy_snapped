@@ -355,15 +355,24 @@ its most aggressive targeted ads to your feed."
 
 ### 2.2 Implementation
 
+**Key Innovation: Semantic Divergence**
+
+Traditional privacy tools (like TrackMeNot) spam random dictionary words. Modern ad networks filter this out using anomaly detection. Instead, we use **Semantic Divergence** - the local LLM generates a highly credible, internally consistent "Anti-Persona" that executes alongside your real browsing.
+
+If your data says you're an engineering student looking up deep learning, the poisoner creates a shadow trail making you look like a 45-year-old amateur botanist looking for real estate in Kerala.
+
+#### LangGraph Multi-Agent System
+
 ```python
 # parsers/active_defense_system.py
 from typing import Dict, TypedDict, List
 from langgraph.graph import StateGraph, END
 import json
-from langchain_ollama import OllamaLLM
+from langchain_community.llms import Ollama
+from langchain_core.prompts import PromptTemplate
 
-# Initialize local LLM
-llm = OllamaLLM(model="llama3.2")
+# Initialize local LLM (optimized for VRAM constraints)
+local_llm = Ollama(model="qwen:0.5b")  # Swap with your local model
 
 class FirewallState(TypedDict):
     inferred_vulnerabilities: List[Dict]
@@ -382,28 +391,49 @@ def vulnerability_assessor_node(state: FirewallState) -> Dict:
     return {"inferred_vulnerabilities": critical_targets}
 
 def profile_poisoner_node(state: FirewallState) -> Dict:
-    """Generate data poisoning vectors to break tracking profiles."""
+    """
+    Generate data poisoning vectors using Semantic Divergence.
+    Creates credible anti-persona queries, not random noise.
+    """
     print("[+] Node 2: Computing Profile Poisoning Decoys...")
-    vulns = state["inferred_vulnerabilities"]
+    vulns = state.get("inferred_vulnerabilities", [])
     
-    decoys = {}
-    for v in vulns:
-        target_interest = v["Inferred_Connection"]
-        
-        # Use LLM to generate semantic opposites
-        prompt = f"""
-        Generate 3 search queries that are semantically opposite to: "{target_interest}"
-        These will be used to poison ad tracking algorithms.
-        
-        Format: Return only the queries, one per line.
+    decoy_payloads = []
+    
+    # Prompt forces LLM to think like a human creating a specific, divergent profile
+    poison_prompt = PromptTemplate(
+        input_variables=["target_interest"],
+        template="""
+        You are a red-team privacy agent. The tracking algorithm thinks the user is highly interested in: '{target_interest}'.
+        Generate 3 highly realistic, human-like Google search queries that suggest the exact OPPOSITE demographic or lifestyle. 
+        The queries must look natural, not random.
+        Output ONLY a valid JSON list of strings. No markdown, no explanations.
         """
-        
-        response = llm.invoke(prompt)
-        decoy_queries = response.strip().split('\n')
-        
-        decoys[target_interest] = decoy_queries
+    )
     
-    return {"poisoning_strategy": {"status": "active", "decoy_payloads": decoys}}
+    for v in vulns:
+        target = v["Inferred_Connection"]
+        try:
+            # Generate divergent queries locally
+            response = local_llm.invoke(poison_prompt.format(target_interest=target))
+            decoys = json.loads(response.strip())
+            
+            decoy_payloads.append({
+                "target_to_dilute": target,
+                "decoy_queries": decoys
+            })
+        except Exception as e:
+            print(f"[-] Generation failed for {target}, using fallback noise.")
+            decoy_payloads.append({
+                "target_to_dilute": target,
+                "decoy_queries": [
+                    "best organic fertilizer for indoor plants",
+                    "how to knit a scarf for beginners",
+                    "retirement planning strategies for 50+"
+                ]
+            })
+    
+    return {"poisoning_strategy": {"status": "armed", "payloads": decoy_payloads}}
 
 def blindspot_generator_node(state: FirewallState) -> Dict:
     """Generate behavioral modifications to bypass habit loops."""
@@ -415,14 +445,14 @@ def blindspot_generator_node(state: FirewallState) -> Dict:
     behavioral interventions to break algorithmic tracking patterns.
     
     Focus on:
-    1. Separating cross-app sessions
-    2. Introducing location noise
-    3. Breaking time-based patterns
+    1. Separating cross-app sessions by 90+ minutes
+    2. Introducing location noise during peak vulnerability windows
+    3. Breaking time-based patterns with offline activities
     
     Format: Return actionable steps, one per line.
     """
     
-    response = llm.invoke(prompt)
+    response = local_llm.invoke(prompt)
     interventions = response.strip().split('\n')
     
     return {"behavioral_interventions": interventions}
@@ -434,7 +464,7 @@ def compiler_node(state: FirewallState) -> Dict:
     report = {
         "SHIELD_STATUS": "DEPLOYED",
         "MITIGATION_TARGETS": [v["Inferred_Connection"] for v in state["inferred_vulnerabilities"]],
-        "POISONING_VECTORS": state["poisoning_strategy"]["decoy_payloads"],
+        "POISONING_VECTORS": state["poisoning_strategy"]["payloads"],
         "BEHAVIORAL_COUNTER_MEASURES": state["behavioral_interventions"]
     }
     
@@ -457,6 +487,186 @@ workflow.add_edge("Compiler", END)
 
 privacy_firewall_agent = workflow.compile()
 ```
+
+#### Playwright Execution Engine
+
+The poisoning agent generates queries, but we need to actually execute them. This is where **Playwright** comes in - it simulates human browsing behavior to inject the noise.
+
+**Key Features:**
+1. **Uses your actual browser profile** - so tracking cookies link to your real identity
+2. **Simulates human behavior** - variable typing speed, random scrolling, dwell time
+3. **Temporal jitter** - random delays between searches to evade anomaly detection
+4. **Link traversal** - clicks into search results and reads content
+
+```python
+# parsers/shield_executor.py
+import sys
+import json
+import asyncio
+import random
+from playwright.async_api import async_playwright
+
+async def simulate_human_reading(page):
+    """Simulates realistic dwell time by randomly scrolling down a page."""
+    scroll_cycles = random.randint(2, 5)
+    for _ in range(scroll_cycles):
+        # Scroll down by variable pixels
+        scroll_amount = random.randint(300, 700)
+        await page.evaluate(f"window.scrollBy(0, {scroll_amount});")
+        # Rest at new scroll position to simulate reading
+        await asyncio.sleep(random.uniform(3.0, 12.0))
+
+async def execute_poison_vector(query_list, user_profile_path=None):
+    """
+    Launches background browser session to execute semantic noise queries.
+    
+    Parameters:
+    - query_list: List of string queries to execute
+    - user_profile_path: Path to your local Chrome/Chromium user profile 
+                         (Crucial so tracking cookies link to your actual profile)
+    """
+    async with async_playwright() as p:
+        print("[+] Starting Headless Shield Engine...")
+        
+        # Launch persistent context to inherit active cookies
+        if user_profile_path:
+            context = await p.chromium.launch_persistent_context(
+                user_data_dir=user_profile_path,
+                headless=True,  # Runs quietly in background
+                args=["--disable-blink-features=AutomationControlled"]  # Evade bot detection
+            )
+        else:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            )
+        
+        page = await context.new_page()
+        
+        for index, query in enumerate(query_list):
+            try:
+                print(f"[+] Injecting Noise Vector {index + 1}/{len(query_list)}: '{query}'")
+                
+                # Navigate to Google
+                await page.goto("https://www.google.com", wait_until="networkidle")
+                
+                # Wait for search input
+                search_box = await page.wait_for_selector("textarea[name='q']", state="visible")
+                await search_box.click()
+                
+                # Type query with variable character delay (mimics human typing)
+                for char in query:
+                    await search_box.type(char)
+                    await asyncio.sleep(random.uniform(0.05, 0.25))
+                
+                # Submit query
+                await search_box.press("Enter")
+                await page.wait_for_load_state("networkidle")
+                
+                # Extract first-page organic links (exclude Google internal links)
+                await page.wait_for_selector("div.g")
+                links = await page.locator("div.g a").all()
+                
+                valid_links = [
+                    await link.get_attribute("href") 
+                    for link in links 
+                    if await link.get_attribute("href")
+                ]
+                valid_links = [l for l in valid_links if l and "google.com" not in l and "youtube.com" not in l]
+                
+                if valid_links:
+                    # Select random destination from top results
+                    target_link = random.choice(valid_links[:4])
+                    print(f"    [->] Navigating to: {target_link}")
+                    
+                    # Open target page
+                    await page.goto(target_link, wait_until="load", timeout=15000)
+                    
+                    # Dwell on site to confirm interest to tracking pixels
+                    await simulate_human_reading(page)
+                
+            except Exception as e:
+                print(f"    [-] Error executing vector: {str(e)}")
+                continue
+            
+            # Anti-signature temporal jitter between searches
+            inter_search_delay = random.uniform(15.0, 60.0)
+            print(f"[+] Cooling down for {round(inter_search_delay, 2)}s...")
+            await asyncio.sleep(inter_search_delay)
+        
+        await context.close()
+        print("[+] Poisoning batch complete. Shield Engine sleeping.")
+
+if __name__ == "__main__":
+    # Accept queries via command line
+    if len(sys.argv) > 1:
+        queries = json.loads(sys.argv[1])
+    else:
+        queries = [
+            "organic farming techniques",
+            "how to build a greenhouse",
+            "permaculture design basics"
+        ]
+    
+    asyncio.run(execute_poison_vector(queries))
+```
+
+#### Deployment Controller
+
+Connects LangGraph output to Playwright execution:
+
+```python
+# parsers/deploy_defense.py
+import subprocess
+import json
+from pathlib import Path
+
+def deploy_active_defense(state: dict):
+    """
+    Extracts semantic decoys from LangGraph state and dispatches
+    background Playwright automation process.
+    """
+    strategy = state.get("poisoning_strategy", {})
+    if strategy.get("status") != "armed":
+        print("[-] Active poisoning system not armed. Aborting.")
+        return state
+    
+    payloads = strategy.get("payloads", [])
+    
+    # Flatten all decoy queries into single batch
+    all_decoy_queries = []
+    for payload in payloads:
+        all_decoy_queries.extend(payload.get("decoy_queries", []))
+    
+    if not all_decoy_queries:
+        print("[-] No valid decoy vectors found.")
+        return state
+    
+    # Serialize for shell arguments
+    queries_json_str = json.dumps(all_decoy_queries)
+    
+    # Locate script path
+    script_path = Path(__file__).parent / "shield_executor.py"
+    
+    print(f"[+] Dispatching Shield Automation with {len(all_decoy_queries)} payloads...")
+    
+    # Launch as detached subprocess (non-blocking)
+    subprocess.Popen(
+        ["python", str(script_path), queries_json_str],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True  # Detaches execution
+    )
+    
+    return state
+```
+
+**Why This Evades Detection:**
+
+1. **Dynamic Dwell Time** - Variable scrolling + reading time satisfies scroll-depth tracking
+2. **Link Traversal** - Clicks into results, not just searches (higher value to ad bidders)
+3. **Temporal Jitter** - Random delays between actions break pattern matching
+4. **Profile Persistence** - Uses your actual cookies so noise attaches to your real profile
 
 ---
 
