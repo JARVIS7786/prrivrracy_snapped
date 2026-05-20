@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Skill(superpowers:using-superpowers)"
+      "Skill(superpowers:using-superpowers)",
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(pip show *)",
+      "Bash(conda activate *)",
+      "Bash(where python *)",
+      "Bash(conda env *)",
+      "Bash(.venv/Scripts/pip install *)",
+      "Bash(.venv/Scripts/python.exe *)",
+      "Bash(ollama ls *)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

@@ -42,12 +42,12 @@ The algorithm already solved for you — and it turns out you're just a predicta
 
 ---
 
-## ⚡ Get Your Own Report in 4 Steps
+## ⚡ Get Your Own Report in 5 Steps
 
 ### Step 1 — Download Your Instagram Data
 👉 [Click here to request your Instagram data](https://accountscenter.instagram.com/info_and_permissions/dyi/)
 - Select: **Download to device**
-- Format: **JSON**
+- Format: **HTML** (not JSON)
 - Takes: 1–48 hours to arrive in your email
 
 ### Step 2 — Download Your Google Data  
@@ -56,33 +56,140 @@ The algorithm already solved for you — and it turns out you're just a predicta
 - Format: **HTML**
 - Takes: Usually under 1 hour
 
-### Step 3 — Run the Tool
+### Step 3 — Setup Environment
 ```bash
 git clone https://github.com/YOUR_USERNAME/privacy-wrapped
 cd privacy-wrapped
-pip install -r requirements.txt
-# Add your OpenRouter API key to .env
-python parsers/instagram_parser.py
-python parsers/google_parser.py
-python parsers/combine.py
+
+# Create virtual environment with uv (faster than pip)
+uv venv
+source .venv/Scripts/activate  # Windows Git Bash
+# OR: .venv\Scripts\activate   # Windows CMD
+
+# Install dependencies
+uv pip install beautifulsoup4 pandas google-generativeai python-dotenv numpy
 ```
 
-### Step 4 — See Your Report
-Open `report/templates/report.html` in your browser and drag in `output/combined_data.json`
+### Step 4 — Add API Keys
+Edit `.env` file:
+```
+GEMINI_API_KEY=your-key-here
+```
+Get FREE Gemini key: https://aistudio.google.com/app/apikey
+
+### Step 5 — Run Parsers
+```bash
+python parsers/instagram_parser.py
+python parsers/google_parser.py
+python parsers/ai_conversations_parser.py  # Optional: if you have ChatGPT/Claude data
+python parsers/feature_engineering.py
+python parsers/gemini_embeddings.py
+```
 
 ---
 
-## 🛠️ How It Works
+## 🔬 Surveillance Engine (Advanced Analysis)
+
+After running the basic report, unlock the full ML pipeline to see how platforms monetize your data:
+
+### Installation
+```bash
+pip install networkx pyvis numpy scikit-learn
+
+# For local embeddings (no API needed)
+# Install Ollama: https://ollama.ai
+ollama pull nomic-embed-text
+```
+
+### Run All Layers
+
+```bash
+# Layer 1: Feature Engineering
+python parsers/feature_engineering.py
+
+# Layer 2: Embeddings (local, no API needed)
+python parsers/gemini_embeddings_ollama.py
+
+# Layer 3: Knowledge Graph
+python parsers/knowledge_graph.py
+# Opens output/knowledge_graph.html in browser
+
+# Layer 4: RTB Auction Simulator  
+python parsers/rtb_simulator.py
+
+# Generate Demo Data (for testing)
+python parsers/demo_data_generator.py
+```
+
+### Full Dashboard
+Open `report/templates/surveillance_dashboard.html` in your browser to see:
+- Interactive knowledge graph showing surveillance connections
+- Real-time bidding auction simulation
+- Your feature vector as a mathematical object
+- Behavioral inference timeline
+
+### What Each Layer Does
+
+**Layer 1: Feature Engineering**
+- Converts raw data into normalized affinity scores
+- Calculates demographic multipliers
+- Outputs: `user_feature_matrix.json`
+
+**Layer 2: Embeddings**
+- Uses local Ollama (nomic-embed-text) to generate semantic embeddings
+- Finds hidden connections between your activities and advertiser interests
+- No API calls, runs entirely offline
+- Outputs: `embeddings_ollama.json`
+
+**Layer 3: Knowledge Graph**
+- Builds interactive network visualization with NetworkX + Pyvis
+- Highlights the circular surveillance path in RED:
+  - YOU → AI Project → Anxiety Marker → Advertiser → Demographics → YOU
+- Shows how your "betterme-ai-interviewer" project revealed job-hunting anxiety
+- Outputs: `knowledge_graph.html` (94 nodes, 110 edges)
+
+**Layer 4: RTB Simulator**
+- Simulates the 100ms real-time bidding auction
+- Uses actual Indian CPM rates (Education: ₹1,205, Entertainment: ₹654)
+- Calculates your annual data value based on:
+  - 8 sessions/day × 12 ads/session × 365 days
+  - Demographic multipliers (single + educated + engaged shopper = 3.28x)
+  - Affinity scores (bollywood: 1.0, coding: 0.545)
+- Shows winner: typically education companies for job-hunting signals
+- Outputs: `rtb_results.json`
+
+### Demo Mode
+Try the tool without uploading your own data:
+```bash
+python parsers/demo_data_generator.py
+```
+Then open `report/templates/report.html` and click "Try Demo"
+
+---
+
+## 🛠️ How It Works (Surveillance Engine)
 
 ```
-Your Instagram ZIP → BeautifulSoup Parser → Clean JSON
-Your Google Takeout → Regex Line Parser  → Clean JSON
-                                    ↓
-                            Combined Profile
-                                    ↓
-                         OpenRouter AI (Free)
-                                    ↓
-                      Personalized Scary Report 🔥
+Layer 0: Data Parsing
+Instagram ZIP → BeautifulSoup → instagram_data.json
+Google Takeout → Regex Parser → google_data.json
+AI Conversations → HTML Parser → ai_data.json
+
+Layer 1: Feature Engineering
+All JSON → Affinity Scores → user_feature_matrix.json
+(cricket: 0.455, coding: 0.545, bollywood: 1.0)
+
+Layer 2: Embeddings (THE SCARY PART)
+All data → Gemini API → embeddings.json
+Finds hidden connections:
+"betterme-ai-interviewer" ↔ "Scaler Education" (0.891 similarity)
+Instagram KNEW you were job hunting before you told anyone
+
+Layer 3: Knowledge Graph (Coming Soon)
+Visual network showing surveillance connections
+
+Layer 4: RTB Simulator (Coming Soon)
+Simulates real-time bidding auction with Indian CPM rates
 ```
 
 ---

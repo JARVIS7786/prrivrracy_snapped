@@ -230,11 +230,47 @@
 
     <div class="container">
 
+        <!-- Demo Mode Section -->
+        <div style="text-align: center; padding: 20px; margin-top: 10vh;">
+            <button onclick="loadDemo()" style="
+                background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                font-size: 1.1em;
+                font-weight: 700;
+                border-radius: 30px;
+                cursor: pointer;
+                font-family: 'Space Grotesk', sans-serif;
+                transition: all 0.3s ease;
+                box-shadow: 0 5px 20px rgba(176, 38, 255, 0.3);
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                Try Demo (no upload needed)
+            </button>
+            <p style="color: var(--text-muted); margin-top: 15px; font-size: 0.9em;">
+                or drag your own data below ↓
+            </p>
+        </div>
+
         <div id="drop-zone">
             <h2>Decrypt Your Data</h2>
             <p>Drag & Drop <strong>instagram_data.json</strong> and/or <strong>google_data.json</strong> here.</p>
             <p style="font-size: 0.75em; margin-top: 20px;">You can upload both! Data never leaves your browser.</p>
             <input type="file" id="file-input" accept=".json" multiple>
+        </div>
+
+        <!-- Demo Mode Banner -->
+        <div id="demo-banner" style="
+            display: none;
+            background: rgba(176, 38, 255, 0.2);
+            border: 2px solid var(--accent-purple);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        ">
+            <strong style="color: var(--accent-purple);">DEMO MODE</strong> — This is Rahul's data (23, Mumbai)
         </div>
 
         <div id="report-ui">
@@ -316,6 +352,31 @@
         fileInput.addEventListener('change', (e) => {
             Array.from(e.target.files).forEach(processFile);
         });
+
+        // Load Demo Data
+        async function loadDemo() {
+            try {
+                // Show demo banner
+                document.getElementById('demo-banner').style.display = 'block';
+
+                // Fetch demo data files
+                const instagramResponse = await fetch('../../output/demo_instagram_data.json');
+                const googleResponse = await fetch('../../output/demo_google_data.json');
+
+                if (instagramResponse.ok) {
+                    const instagramData = await instagramResponse.json();
+                    renderReport(instagramData);
+                }
+
+                if (googleResponse.ok) {
+                    const googleData = await googleResponse.json();
+                    renderReport(googleData);
+                }
+            } catch (error) {
+                console.error('Error loading demo data:', error);
+                alert('Demo data not found. Please run: python parsers/demo_data_generator.py');
+            }
+        }
 
         function processFile(file) {
             const reader = new FileReader();

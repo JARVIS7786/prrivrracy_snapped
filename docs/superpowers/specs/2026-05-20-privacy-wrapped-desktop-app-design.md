@@ -858,13 +858,13 @@ cargo tauri build
 
 ---
 
-## Open Questions
+## Technical Decisions
 
-1. **Gemini API Costs:** How many free API calls do we get? Need to budget for roast generation.
-2. **Supabase Limits:** Free tier allows 500MB database. Will this be enough for 1,000+ submissions?
-3. **Windows Defender:** Will the .exe get flagged as malware? Need to sign the binary.
-4. **File Size:** Can we get under 100MB for WhatsApp sharing?
-5. **Mac/Linux Support:** Should we prioritize cross-platform from day 1, or Windows-only first?
+1. **Gemini API Costs:** Free tier provides 1,500 requests/day. Sufficient for initial launch. Will cache roasts and implement rate limiting.
+2. **Supabase Limits:** Free tier (500MB) supports ~50,000 submissions at ~10KB each. More than enough for Phase 1-2.
+3. **Windows Defender:** Will use code signing certificate (free via SignPath for open source) to prevent false positives.
+4. **File Size:** Target 50-60MB (Tauri ~20MB + Python runtime ~30MB + assets ~10MB). Well under WhatsApp's 100MB limit.
+5. **Mac/Linux Support:** Windows-only for v1.0 (largest market in India). Cross-platform in v1.2 after validating demand.
 
 ---
 

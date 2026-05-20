@@ -2,3 +2,6 @@ beautifulsoup4
 pandas
 anthropic
 flask
+google-generativeai
+python-dotenv
+numpy
