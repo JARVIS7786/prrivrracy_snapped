@@ -2,7 +2,7 @@
 .env
 data/
 output/
-
+.venv
 # Python
 __pycache__/
 *.pyc
